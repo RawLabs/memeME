@@ -256,6 +256,10 @@ function drawTextLayer(layer) {
 
   const maxWidth = canvas.width * 0.9;
   const lines = wrapText(text, maxWidth);
+  let maxLineWidth = 0;
+  lines.forEach((line) => {
+    maxLineWidth = Math.max(maxLineWidth, ctx.measureText(line).width);
+  });
   const lineHeight = fontSize * 1.1;
   const totalHeight = lines.length * lineHeight;
   const availableHeight = Math.max(1, canvas.height - totalHeight);
@@ -263,10 +267,6 @@ function drawTextLayer(layer) {
   const availableWidth = Math.max(1, canvas.width - maxLineWidth);
   const centerX = clamp(layer.xNorm, 0, 1) * availableWidth + maxLineWidth / 2;
   let y = yStart;
-  let maxLineWidth = 0;
-  lines.forEach((line) => {
-    maxLineWidth = Math.max(maxLineWidth, ctx.measureText(line).width);
-  });
 
   lines.forEach((line) => {
     ctx.strokeText(line, centerX, y);
