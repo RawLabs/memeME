@@ -80,6 +80,50 @@ textarea {
   resize: vertical;
 }
 
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.layer-card {
+  background: #1a1e27;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid #2e323f;
+}
+
+.layer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.layer-header span {
+  font-weight: 600;
+}
+
+.layer-remove {
+  background: none;
+  border: none;
+  color: #f87171;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#addLayerBtn {
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(79, 70, 229, 0.25);
+  border: 1px solid rgba(79, 70, 229, 0.4);
+  color: #e0e7ff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .row {
   display: flex;
   gap: 12px;

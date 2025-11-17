@@ -5,6 +5,7 @@ A Telegram meme studio that lives entirely inside Telegram. `/mememe` opens a Bo
 ## Highlights
 - **Inline Meme Studio** – `/mememe` replies with a WebApp button (`🎨 Open Meme Studio`) that launches the mini-app directly inside Telegram (DMs or groups with privacy mode on).
 - **Instant downloads** – the WebApp now renders memes client-side on a canvas so users can download the final image and post it anywhere (Telegram, Instagram, etc.) without waiting for the bot backend.
+- **Drag-and-drop placement** – add up to three text boxes, drag them on the preview, or fine-tune their vertical position with sliders.
 - **Fresh templates** – templates are fetched from Imgflip (or any API you configure) every few hours; nothing is persisted locally beyond a JSON cache in memory.
 - **Chat fallback** – anyone can reply to a photo/document with `/caption top text || bottom text` to run the Python renderer if they prefer the classic chat flow.
 - **Lightweight hosting** – the WebApp is a static bundle (`webapp/`) that can be dropped into any HTTPS host (GitHub Pages, Netlify, etc.).

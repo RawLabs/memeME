@@ -28,45 +28,11 @@
       </section>
 
       <section>
-        <h2>Text</h2>
-        <label>
-          Top text
-          <textarea id="topText" rows="2" placeholder="Top line"></textarea>
-        </label>
-        <div class="row">
-          <label>
-            Top placement
-            <select id="topPlacement">
-              <option value="top">Top</option>
-              <option value="center">Center</option>
-              <option value="bottom">Bottom</option>
-              <option value="custom">Custom</option>
-            </select>
-          </label>
-          <label>
-            Top Y % (custom)
-            <input id="topCustomY" type="range" min="0" max="100" value="10" />
-          </label>
-        </div>
-        <label>
-          Bottom text
-          <textarea id="bottomText" rows="2" placeholder="Bottom line"></textarea>
-        </label>
-        <div class="row">
-          <label>
-            Bottom placement
-            <select id="bottomPlacement">
-              <option value="bottom">Bottom</option>
-              <option value="center">Center</option>
-              <option value="top">Top</option>
-              <option value="custom">Custom</option>
-            </select>
-          </label>
-          <label>
-            Bottom Y % (custom)
-            <input id="bottomCustomY" type="range" min="0" max="100" value="90" />
-          </label>
-        </div>
+        <h2>Text layers</h2>
+        <p class="hint">Drag text directly on the preview or tweak the sliders below. Add up to three layers.</p>
+        <div id="layersContainer" class="layers"></div>
+        <button id="addLayerBtn" type="button">Add text box</button>
+      </section>
         <div class="row">
           <label>
             Font

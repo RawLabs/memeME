@@ -7,15 +7,11 @@ const state = {
   selectedTemplate: null,
   templateImage: null,
   cropBox: null,
+  layers: [],
+  layerBoxes: new Map(),
 };
 
 const templateGrid = document.getElementById("templates");
-const topInput = document.getElementById("topText");
-const bottomInput = document.getElementById("bottomText");
-const topPlacement = document.getElementById("topPlacement");
-const bottomPlacement = document.getElementById("bottomPlacement");
-const topCustomY = document.getElementById("topCustomY");
-const bottomCustomY = document.getElementById("bottomCustomY");
 const fontSelect = document.getElementById("fontSelect");
 const colorInput = document.getElementById("textColor");
 const outlineInput = document.getElementById("outlineColor");
@@ -25,6 +21,8 @@ const cropSelect = document.getElementById("cropMode");
 const captionInput = document.getElementById("caption");
 const downloadBtn = document.getElementById("downloadBtn");
 const shareTipsBtn = document.getElementById("shareTipsBtn");
+const layersContainer = document.getElementById("layersContainer");
+const addLayerBtn = document.getElementById("addLayerBtn");
 const canvas = document.getElementById("previewCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -35,30 +33,26 @@ const FONT_MAP = {
   poppins: '"Poppins", sans-serif',
 };
 
+let draggingLayerId = null;
+let dragPointerId = null;
+
 init();
 
 function init() {
+  state.layers = [createLayer(0.08), createLayer(0.78)];
+  renderLayerControls();
   attachListeners();
   fetchTemplates();
   renderPlaceholder();
 }
 
 function attachListeners() {
-  [topInput, bottomInput, uppercaseInput, captionInput].forEach((el) =>
-    el.addEventListener("input", renderPreview)
-  );
-  [fontSelect, colorInput, outlineInput, topPlacement, bottomPlacement].forEach((el) =>
-    el.addEventListener("change", renderPreview)
-  );
-  [topCustomY, bottomCustomY].forEach((el) => el.addEventListener("input", () => {
-    const { target } = document.activeElement;
-    if (target === topCustomY) {
-      topPlacement.value = "custom";
-    } else if (target === bottomCustomY) {
-      bottomPlacement.value = "custom";
-    }
-    renderPreview();
-  }));
+  layersContainer.addEventListener("input", handleLayerInput);
+  layersContainer.addEventListener("click", handleLayerClick);
+  addLayerBtn.addEventListener("click", addLayer);
+
+  [uppercaseInput, captionInput].forEach((el) => el.addEventListener("input", renderPreview));
+  [fontSelect, colorInput, outlineInput].forEach((el) => el.addEventListener("change", renderPreview));
   sizeInput.addEventListener("input", renderPreview);
   cropSelect.addEventListener("change", () => {
     state.cropBox = computeCrop();
@@ -68,6 +62,85 @@ function attachListeners() {
   shareTipsBtn.addEventListener("click", () => {
     tg.showAlert("Download the meme, close the Studio, then attach the saved image in Telegram like any other photo.");
   });
+
+  canvas.addEventListener("pointerdown", handlePointerDown);
+  canvas.addEventListener("pointermove", handlePointerMove);
+  canvas.addEventListener("pointerup", handlePointerUp);
+  canvas.addEventListener("pointerleave", handlePointerUp);
+}
+
+function createLayer(defaultYNorm = 0.5) {
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : `layer-${Date.now()}-${Math.random()}`,
+    text: "",
+    yNorm: defaultYNorm,
+  };
+}
+
+function renderLayerControls() {
+  layersContainer.innerHTML = "";
+  state.layers.forEach((layer, index) => {
+    const card = document.createElement("div");
+    card.className = "layer-card";
+    card.dataset.layerId = layer.id;
+    card.innerHTML = `
+      <div class="layer-header">
+        <span>Text ${index + 1}</span>
+        ${
+          state.layers.length > 1
+            ? `<button class="layer-remove" data-action="remove" data-layer-id="${layer.id}">Remove</button>`
+            : ""
+        }
+      </div>
+      <label>
+        Content
+        <textarea rows="2" data-layer-id="${layer.id}" data-field="text" placeholder="Type your text">${layer.text}</textarea>
+      </label>
+      <label>
+        Vertical position (${Math.round(layer.yNorm * 100)}%)
+        <input type="range" min="0" max="100" value="${Math.round(layer.yNorm * 100)}" data-layer-id="${layer.id}" data-field="yNorm" />
+      </label>
+    `;
+    layersContainer.appendChild(card);
+  });
+}
+
+function handleLayerInput(event) {
+  const target = event.target;
+  const layerId = target.dataset.layerId;
+  if (!layerId) return;
+  const layer = state.layers.find((entry) => entry.id === layerId);
+  if (!layer) return;
+  if (target.dataset.field === "text") {
+    layer.text = target.value;
+  } else if (target.dataset.field === "yNorm") {
+    layer.yNorm = Math.min(1, Math.max(0, Number(target.value) / 100));
+  }
+  renderLayerControls();
+  renderPreview();
+}
+
+function handleLayerClick(event) {
+  if (event.target.dataset.action === "remove") {
+    const layerId = event.target.dataset.layerId;
+    state.layers = state.layers.filter((layer) => layer.id !== layerId);
+    if (!state.layers.length) {
+      state.layers.push(createLayer(0.5));
+    }
+    renderLayerControls();
+    renderPreview();
+  }
+}
+
+function addLayer() {
+  if (state.layers.length >= 3) {
+    tg.showAlert("Maximum of three text boxes for now.");
+    return;
+  }
+  const defaultY = state.layers.length === 0 ? 0.1 : 0.5;
+  state.layers.push(createLayer(defaultY));
+  renderLayerControls();
+  renderPreview();
 }
 
 function fetchTemplates() {
@@ -116,9 +189,7 @@ function selectTemplate(template, cardElement) {
     state.cropBox = computeCrop();
     renderPreview();
   };
-  image.onerror = () => {
-    tg.showAlert("Failed to load template image. Try again or pick another template.");
-  };
+  image.onerror = () => tg.showAlert("Failed to load template image. Try again or pick another template.");
   image.src = template.thumb;
 }
 
@@ -148,29 +219,14 @@ function renderPreview() {
   canvas.width = sw;
   canvas.height = sh;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   ctx.drawImage(state.templateImage, sx, sy, sw, sh, 0, 0, canvas.width, canvas.height);
 
-  getLayers().forEach((layer) => drawTextLayer(layer));
-}
-
-function getLayers() {
-  const layers = [];
-  if (topInput.value.trim()) {
-    layers.push({
-      text: topInput.value.trim(),
-      position: topPlacement.value,
-      customY: Number(topCustomY.value) / 100,
-    });
-  }
-  if (bottomInput.value.trim()) {
-    layers.push({
-      text: bottomInput.value.trim(),
-      position: bottomPlacement.value,
-      customY: Number(bottomCustomY.value) / 100,
-    });
-  }
-  return layers;
+  state.layerBoxes.clear();
+  state.layers.forEach((layer) => {
+    if (layer.text.trim()) {
+      drawTextLayer(layer);
+    }
+  });
 }
 
 function drawTextLayer(layer) {
@@ -188,22 +244,27 @@ function drawTextLayer(layer) {
   const lines = wrapText(text, maxWidth);
   const lineHeight = fontSize * 1.1;
   const totalHeight = lines.length * lineHeight;
-  let y;
-  const margin = canvas.height * 0.08;
-  if (layer.position === "top") {
-    y = margin + fontSize;
-  } else if (layer.position === "bottom") {
-    y = canvas.height - totalHeight + fontSize * 0.2;
-  } else if (layer.position === "custom") {
-    y = layer.customY ? layer.customY * canvas.height : canvas.height / 2;
-  } else {
-    y = canvas.height / 2 - totalHeight / 2 + fontSize;
-  }
+  const availableHeight = Math.max(1, canvas.height - totalHeight);
+  const yStart = Math.min(1, Math.max(0, layer.yNorm)) * availableHeight + fontSize;
+  let y = yStart;
+  let maxLineWidth = 0;
+  lines.forEach((line) => {
+    maxLineWidth = Math.max(maxLineWidth, ctx.measureText(line).width);
+  });
+
   lines.forEach((line) => {
     const x = canvas.width / 2;
     ctx.strokeText(line, x, y);
     ctx.fillText(line, x, y);
     y += lineHeight;
+  });
+
+  state.layerBoxes.set(layer.id, {
+    id: layer.id,
+    x: canvas.width / 2 - maxLineWidth / 2,
+    y: yStart - fontSize,
+    width: maxLineWidth,
+    height: totalHeight,
   });
 }
 
@@ -225,19 +286,15 @@ function wrapText(text, maxWidth) {
 }
 
 function computeCrop() {
-  if (!state.selectedTemplate) {
-    return null;
-  }
+  if (!state.selectedTemplate) return null;
   const tpl = state.selectedTemplate;
   const mode = cropSelect.value;
-  if (mode === "original") {
-    return null;
-  }
+  if (mode === "original") return null;
+
   const targetRatio =
     mode === "square" ? 1 : mode === "fourFive" ? 4 / 5 : mode === "sixteenNine" ? 16 / 9 : null;
-  if (!targetRatio) {
-    return null;
-  }
+  if (!targetRatio) return null;
+
   const currentRatio = tpl.width / tpl.height;
   let cropWidth = tpl.width;
   let cropHeight = tpl.height;
@@ -280,4 +337,52 @@ function downloadMeme() {
     URL.revokeObjectURL(url);
     tg.HapticFeedback?.notificationOccurred("success");
   });
+}
+
+function handlePointerDown(event) {
+  const { x, y } = getCanvasCoords(event);
+  const hit = hitTestLayer(x, y);
+  if (hit) {
+    draggingLayerId = hit.id;
+    dragPointerId = event.pointerId;
+    canvas.setPointerCapture(event.pointerId);
+  }
+}
+
+function handlePointerMove(event) {
+  if (!draggingLayerId || dragPointerId !== event.pointerId) return;
+  const { y } = getCanvasCoords(event);
+  const layer = state.layers.find((entry) => entry.id === draggingLayerId);
+  if (!layer) return;
+  const bbox = state.layerBoxes.get(layer.id);
+  const blockHeight = bbox?.height || 0;
+  const availableHeight = Math.max(1, canvas.height - blockHeight);
+  layer.yNorm = Math.min(1, Math.max(0, (y - blockHeight / 2) / availableHeight));
+  renderLayerControls();
+  renderPreview();
+}
+
+function handlePointerUp(event) {
+  if (dragPointerId === event.pointerId) {
+    draggingLayerId = null;
+    dragPointerId = null;
+    canvas.releasePointerCapture(event.pointerId);
+  }
+}
+
+function getCanvasCoords(event) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  };
+}
+
+function hitTestLayer(x, y) {
+  for (const box of state.layerBoxes.values()) {
+    if (x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height) {
+      return box;
+    }
+  }
+  return null;
 }
