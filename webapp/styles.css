@@ -124,6 +124,20 @@ textarea {
   cursor: pointer;
 }
 
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+.slider-value {
+  font-weight: 600;
+  color: #93c5fd;
+}
+
 .row {
   display: flex;
   gap: 12px;

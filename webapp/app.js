@@ -39,16 +39,62 @@ let dragPointerId = null;
 init();
 
 function init() {
-  state.layers = [createLayer(0.08), createLayer(0.78)];
+  state.layers = [createLayer(0.12, 0.5), createLayer(0.85, 0.5)];
   renderLayerControls();
-  attachListeners();
+  attachGlobalListeners();
   fetchTemplates();
   renderPlaceholder();
 }
 
-function attachListeners() {
-  layersContainer.addEventListener("input", handleLayerInput);
-  layersContainer.addEventListener("click", handleLayerClick);
+function createLayer(yNorm = 0.5, xNorm = 0.5) {
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : `layer-${Date.now()}-${Math.random()}`,
+    text: "",
+    yNorm,
+    xNorm,
+  };
+}
+
+function renderLayerControls() {
+  layersContainer.innerHTML = state.layers
+    .map(
+      (layer, index) => `
+        <div class="layer-card" data-layer-id="${layer.id}">
+          <div class="layer-header">
+            <span>Text ${index + 1}</span>
+            ${
+              state.layers.length > 1
+                ? `<button class="layer-remove" data-action="remove" data-layer-id="${layer.id}">Remove</button>`
+                : ""
+            }
+          </div>
+          <label>
+            Content
+            <textarea rows="2" data-layer-id="${layer.id}" data-field="text" placeholder="Type your text">${layer.text}</textarea>
+          </label>
+          <label>
+            <div class="slider-header">
+              <span>Vertical position</span>
+              <span class="slider-value" data-display="yNorm" data-layer-id="${layer.id}">${percent(layer.yNorm)}</span>
+            </div>
+            <input type="range" min="0" max="100" value="${Math.round(layer.yNorm * 100)}" data-layer-id="${layer.id}" data-field="yNorm" />
+          </label>
+          <label>
+            <div class="slider-header">
+              <span>Horizontal position</span>
+              <span class="slider-value" data-display="xNorm" data-layer-id="${layer.id}">${percent(layer.xNorm)}</span>
+            </div>
+            <input type="range" min="0" max="100" value="${Math.round(layer.xNorm * 100)}" data-layer-id="${layer.id}" data-field="xNorm" />
+          </label>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function attachGlobalListeners() {
+  layersContainer.addEventListener("input", onLayerInput);
+  layersContainer.addEventListener("click", onLayerClick);
   addLayerBtn.addEventListener("click", addLayer);
 
   [uppercaseInput, captionInput].forEach((el) => el.addEventListener("input", renderPreview));
@@ -60,7 +106,7 @@ function attachListeners() {
   });
   downloadBtn.addEventListener("click", downloadMeme);
   shareTipsBtn.addEventListener("click", () => {
-    tg.showAlert("Download the meme, close the Studio, then attach the saved image in Telegram like any other photo.");
+    tg.showAlert("Download, close the studio, then send the saved image back into chat.");
   });
 
   canvas.addEventListener("pointerdown", handlePointerDown);
@@ -69,63 +115,27 @@ function attachListeners() {
   canvas.addEventListener("pointerleave", handlePointerUp);
 }
 
-function createLayer(defaultYNorm = 0.5) {
-  return {
-    id: crypto.randomUUID ? crypto.randomUUID() : `layer-${Date.now()}-${Math.random()}`,
-    text: "",
-    yNorm: defaultYNorm,
-  };
-}
-
-function renderLayerControls() {
-  layersContainer.innerHTML = "";
-  state.layers.forEach((layer, index) => {
-    const card = document.createElement("div");
-    card.className = "layer-card";
-    card.dataset.layerId = layer.id;
-    card.innerHTML = `
-      <div class="layer-header">
-        <span>Text ${index + 1}</span>
-        ${
-          state.layers.length > 1
-            ? `<button class="layer-remove" data-action="remove" data-layer-id="${layer.id}">Remove</button>`
-            : ""
-        }
-      </div>
-      <label>
-        Content
-        <textarea rows="2" data-layer-id="${layer.id}" data-field="text" placeholder="Type your text">${layer.text}</textarea>
-      </label>
-      <label>
-        Vertical position (${Math.round(layer.yNorm * 100)}%)
-        <input type="range" min="0" max="100" value="${Math.round(layer.yNorm * 100)}" data-layer-id="${layer.id}" data-field="yNorm" />
-      </label>
-    `;
-    layersContainer.appendChild(card);
-  });
-}
-
-function handleLayerInput(event) {
-  const target = event.target;
-  const layerId = target.dataset.layerId;
+function onLayerInput(event) {
+  const layerId = event.target.dataset.layerId;
   if (!layerId) return;
   const layer = state.layers.find((entry) => entry.id === layerId);
   if (!layer) return;
-  if (target.dataset.field === "text") {
-    layer.text = target.value;
-  } else if (target.dataset.field === "yNorm") {
-    layer.yNorm = Math.min(1, Math.max(0, Number(target.value) / 100));
+  const field = event.target.dataset.field;
+  if (field === "text") {
+    layer.text = event.target.value;
+  } else if (field === "yNorm" || field === "xNorm") {
+    layer[field] = clamp(Number(event.target.value) / 100, 0, 1);
+    updateSliderDisplay(layer, field);
   }
-  renderLayerControls();
   renderPreview();
 }
 
-function handleLayerClick(event) {
+function onLayerClick(event) {
   if (event.target.dataset.action === "remove") {
     const layerId = event.target.dataset.layerId;
     state.layers = state.layers.filter((layer) => layer.id !== layerId);
     if (!state.layers.length) {
-      state.layers.push(createLayer(0.5));
+      state.layers.push(createLayer(0.5, 0.5));
     }
     renderLayerControls();
     renderPreview();
@@ -134,11 +144,11 @@ function handleLayerClick(event) {
 
 function addLayer() {
   if (state.layers.length >= 3) {
-    tg.showAlert("Maximum of three text boxes for now.");
+    tg.showAlert("Maximum of three layers for now.");
     return;
   }
-  const defaultY = state.layers.length === 0 ? 0.1 : 0.5;
-  state.layers.push(createLayer(defaultY));
+  const fallback = state.layers.length === 0 ? 0.15 : 0.5;
+  state.layers.push(createLayer(fallback, 0.5));
   renderLayerControls();
   renderPreview();
 }
@@ -245,7 +255,9 @@ function drawTextLayer(layer) {
   const lineHeight = fontSize * 1.1;
   const totalHeight = lines.length * lineHeight;
   const availableHeight = Math.max(1, canvas.height - totalHeight);
-  const yStart = Math.min(1, Math.max(0, layer.yNorm)) * availableHeight + fontSize;
+  const yStart = clamp(layer.yNorm, 0, 1) * availableHeight + fontSize;
+  const availableWidth = Math.max(1, canvas.width - maxLineWidth);
+  const centerX = clamp(layer.xNorm, 0, 1) * availableWidth + maxLineWidth / 2;
   let y = yStart;
   let maxLineWidth = 0;
   lines.forEach((line) => {
@@ -253,15 +265,14 @@ function drawTextLayer(layer) {
   });
 
   lines.forEach((line) => {
-    const x = canvas.width / 2;
-    ctx.strokeText(line, x, y);
-    ctx.fillText(line, x, y);
+    ctx.strokeText(line, centerX, y);
+    ctx.fillText(line, centerX, y);
     y += lineHeight;
   });
 
   state.layerBoxes.set(layer.id, {
     id: layer.id,
-    x: canvas.width / 2 - maxLineWidth / 2,
+    x: centerX - maxLineWidth / 2,
     y: yStart - fontSize,
     width: maxLineWidth,
     height: totalHeight,
@@ -351,14 +362,17 @@ function handlePointerDown(event) {
 
 function handlePointerMove(event) {
   if (!draggingLayerId || dragPointerId !== event.pointerId) return;
-  const { y } = getCanvasCoords(event);
+  const { x, y } = getCanvasCoords(event);
   const layer = state.layers.find((entry) => entry.id === draggingLayerId);
   if (!layer) return;
   const bbox = state.layerBoxes.get(layer.id);
   const blockHeight = bbox?.height || 0;
+  const blockWidth = bbox?.width || 0;
   const availableHeight = Math.max(1, canvas.height - blockHeight);
-  layer.yNorm = Math.min(1, Math.max(0, (y - blockHeight / 2) / availableHeight));
-  renderLayerControls();
+  const availableWidth = Math.max(1, canvas.width - blockWidth);
+  layer.yNorm = clamp((y - blockHeight / 2) / availableHeight, 0, 1);
+  layer.xNorm = clamp((x - blockWidth / 2) / availableWidth, 0, 1);
+  syncLayerControls(layer);
   renderPreview();
 }
 
@@ -385,4 +399,29 @@ function hitTestLayer(x, y) {
     }
   }
   return null;
+}
+
+function updateSliderDisplay(layer, field) {
+  const display = layersContainer.querySelector(`.slider-value[data-display="${field}"][data-layer-id="${layer.id}"]`);
+  if (display) {
+    display.textContent = percent(layer[field]);
+  }
+}
+
+function syncLayerControls(layer) {
+  ["xNorm", "yNorm"].forEach((field) => {
+    const slider = layersContainer.querySelector(`input[data-field="${field}"][data-layer-id="${layer.id}"]`);
+    if (slider) {
+      slider.value = Math.round(layer[field] * 100);
+    }
+    updateSliderDisplay(layer, field);
+  });
+}
+
+function percent(value) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
 }
