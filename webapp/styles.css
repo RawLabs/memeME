@@ -67,6 +67,14 @@ select option {
   color: #0f172a;
 }
 
+canvas {
+  width: 100%;
+  border-radius: 12px;
+  background: #0b0f1a;
+  border: 1px solid #2d303a;
+  max-height: 500px;
+}
+
 textarea {
   resize: vertical;
 }
@@ -112,6 +120,10 @@ textarea {
 }
 
 #generateBtn {
+  display: none;
+}
+
+.primary {
   border: none;
   border-radius: 12px;
   padding: 12px;
@@ -120,6 +132,18 @@ textarea {
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
+  flex: 1;
+}
+
+#shareTipsBtn {
+  border-radius: 12px;
+  padding: 12px;
+  background: rgba(79, 70, 229, 0.15);
+  border: 1px solid rgba(20, 184, 166, 0.3);
+  color: #e0f2fe;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
 }
 
 .hint {

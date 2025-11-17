@@ -4,18 +4,27 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>memeME Studio</title>
-    <link rel="stylesheet" href="styles.css?v=20231116" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Poppins:wght@600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=20231118" />
   </head>
   <body>
     <main class="app">
       <header>
         <h1>memeME Studio</h1>
-        <p>Pick a template or upload through the chat fallback, then customise text/crop options.</p>
+        <p>Pick a template, type your text, preview it live, and download the finished meme without ever leaving Telegram.</p>
       </header>
 
       <section>
         <h2>Templates</h2>
         <div id="templates" class="template-grid"></div>
+      </section>
+
+      <section>
+        <h2>Preview</h2>
+        <canvas id="previewCanvas" width="600" height="600"></canvas>
+        <p class="hint">Preview updates automatically as you change text, colors, or crop.</p>
       </section>
 
       <section>
@@ -32,9 +41,10 @@
           <label>
             Font
             <select id="fontSelect">
-              <option value="Impact.ttf">Impact</option>
-              <option value="Anton-Regular.ttf">Anton</option>
-              <option value="DejaVuSans-Bold.ttf">DejaVu Sans Bold</option>
+              <option value="impact">Impact</option>
+              <option value="anton">Anton</option>
+              <option value="bebas">Bebas Neue</option>
+              <option value="poppins">Poppins</option>
             </select>
           </label>
           <label>
@@ -77,21 +87,16 @@
           Caption
           <input id="caption" type="text" placeholder="Optional caption" />
         </label>
-        <label>
-          Output format
-          <select id="format">
-            <option value="JPEG">JPEG</option>
-            <option value="PNG">PNG</option>
-          </select>
-        </label>
-        <button id="generateBtn">Generate</button>
+        <div class="row">
+          <button id="downloadBtn" class="primary">Download Meme</button>
+          <button id="shareTipsBtn" type="button">How do I share?</button>
+        </div>
         <p class="hint">
-          Want to use your own photo? Send it to the bot and reply with
-          <code>/caption top || bottom</code> while we work on direct uploads.
+          Download saves the meme to your device. Close the studio and send that image back into the chat (or anywhere else).
         </p>
       </section>
     </main>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="module" src="app.js?v=20231116"></script>
+    <script type="module" src="app.js?v=20231118"></script>
   </body>
 </html>

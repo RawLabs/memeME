@@ -37,7 +37,7 @@ DEFAULT_STATUS_TEXT = "Generating your meme…"
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = (
         "Welcome to memeME 🎨\n\n"
-        "• Use /mememe to open the inline Meme Studio (BotFather-style).\n"
+        "• Use /mememe to open the inline Meme Studio (BotFather-style). Download the finished meme and drop it back into chat.\n"
         "• Prefer pure chat? Reply to a photo with `/caption top text || bottom text` "
         "(e.g. `/caption THIS IS TOP || that's bottom`).\n"
         "• I always respond only when called, so feel free to invite me into groups."
