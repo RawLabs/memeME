@@ -1,0 +1,122 @@
+:root {
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  color: #fff;
+  background-color: #1d1f24;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: inherit;
+}
+
+.app {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 1.4rem;
+}
+
+section {
+  background: #242830;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+section h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+textarea,
+input,
+select {
+  border-radius: 10px;
+  border: 1px solid #333;
+  padding: 8px;
+  background: #171a21;
+  color: #fff;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.template-card {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: #121417;
+}
+
+.template-card.selected {
+  border-color: #4fd1c5;
+}
+
+.template-card img {
+  width: 100%;
+  display: block;
+}
+
+.template-card .title {
+  padding: 6px;
+  font-size: 0.85rem;
+}
+
+#generateBtn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #4f46e5, #14b8a6);
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.hint {
+  color: #9ca3af;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+code {
+  background: #101216;
+  border-radius: 6px;
+  padding: 1px 4px;
+}
