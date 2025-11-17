@@ -82,6 +82,18 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await _process_request(update, context, request)
 
 
+async def log_update_debug(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message = update.effective_message
+    has_web_app = bool(message and message.web_app_data)
+    logger.info(
+        "DEBUG update_id=%s has_web_app_data=%s type=%s",
+        update.update_id,
+        has_web_app,
+        message.chat.type if message and message.chat else "n/a",
+    )
+    if has_web_app:
+        await handle_webapp_data(update, context)
+
 async def prompt_photo_reply(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = update.effective_message
     if not message:
@@ -216,6 +228,7 @@ def build_application() -> Application:
     application.add_handler(CommandHandler("mememe", invite_memestudio))
     application.add_handler(CommandHandler("caption", caption_command))
     application.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
+    application.add_handler(MessageHandler(filters.ALL, log_update_debug))
     application.add_handler(MessageHandler(filters.PHOTO | filters.Document.IMAGE, prompt_photo_reply))
 
     # Periodically refresh templates to keep list fresh.
