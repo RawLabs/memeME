@@ -67,7 +67,6 @@ generateBtn.addEventListener("click", () => {
   const payload = buildPayload();
   tg.HapticFeedback?.impactOccurred("medium");
   tg.sendData(JSON.stringify(payload));
-  tg.close();
 });
 
 function buildPayload() {
