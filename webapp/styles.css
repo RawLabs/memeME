@@ -49,9 +49,22 @@ select {
   border-radius: 10px;
   border: 1px solid #333;
   padding: 8px;
-  background: #171a21;
-  color: #fff;
+  background: #f1f5f9;
+  color: #0f172a;
   font-size: 1rem;
+  appearance: none;
+}
+
+select:focus,
+textarea:focus,
+input:focus {
+  outline: 2px solid rgba(79, 209, 197, 0.5);
+  border-color: #4fd1c5;
+}
+
+select option {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 textarea {

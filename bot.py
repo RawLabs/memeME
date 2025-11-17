@@ -38,7 +38,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     message = (
         "Welcome to memeME 🎨\n\n"
         "• Use /mememe to open the inline Meme Studio (BotFather-style).\n"
-        "• Prefer pure chat? Reply to a photo with `/caption top text || bottom text`.\n"
+        "• Prefer pure chat? Reply to a photo with `/caption top text || bottom text` "
+        "(e.g. `/caption THIS IS TOP || that's bottom`).\n"
         "• I always respond only when called, so feel free to invite me into groups."
     )
     await update.effective_message.reply_text(message)
@@ -71,6 +72,8 @@ async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE)
     message = update.effective_message
     if not message or not message.web_app_data:
         return
+    logger.info("Received web_app_data from %s", message.from_user.id if message.from_user else "unknown")
+    logger.debug("Raw web_app_data: %s", message.web_app_data.data)
     try:
         request = parse_webapp_payload(message.web_app_data.data)
     except ValueError as exc:

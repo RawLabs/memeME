@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 
 import httpx
@@ -41,9 +41,11 @@ _SEED_TEMPLATES: List[MemeTemplate] = [
 class TemplateCatalog:
     endpoint: str
     max_templates: int = 70
+    _templates: Dict[str, MemeTemplate] = field(init=False, default_factory=dict)
+    _lock: asyncio.Lock = field(init=False)
 
     def __post_init__(self) -> None:
-        self._templates: Dict[str, MemeTemplate] = {t.template_id: t for t in _SEED_TEMPLATES}
+        self._templates = {t.template_id: t for t in _SEED_TEMPLATES}
         self._lock = asyncio.Lock()
 
     def list_templates(self) -> Iterable[MemeTemplate]:
