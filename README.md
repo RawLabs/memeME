@@ -38,7 +38,7 @@ python bot.py
 
 Commands:
 - `/start` – feature summary.
-- `/mememe` – sends the inline keyboard button that opens the WebApp.
+- `/mememe` – sends the inline keyboard button that opens the WebApp (works everywhere in private chats; in groups you must disable BotFather privacy for the bot or Telegram will drop the “Send to Bot” data).
 - `/caption top text || bottom text` – reply to a photo/document to caption it via the chat-only flow.
 
 When you add memeME to the shared launcher (`python scripts/start_all.py`), the bot token will be picked up via `MEMEME_BOT_TOKEN`.

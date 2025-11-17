@@ -50,6 +50,13 @@ async def invite_memestudio(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             "WebApp URL is not configured yet. Set MEMEME_WEBAPP_URL to enable the inline editor."
         )
         return
+    chat = update.effective_chat
+    group_warning = ""
+    if chat and chat.type in ("group", "supergroup"):
+        group_warning = (
+            "\n\nHeads-up: Telegram only delivers WebApp data in groups if the bot's privacy mode is disabled. "
+            "Use /setprivacy in BotFather to disable it or run /mememe in a private chat."
+        )
     keyboard = InlineKeyboardMarkup(
         [
             [
@@ -61,7 +68,7 @@ async def invite_memestudio(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         ]
     )
     await update.effective_message.reply_text(
-        "Tap below to open memeME Studio inside Telegram.",
+        f"Tap below to open memeME Studio inside Telegram.{group_warning}",
         reply_markup=keyboard,
     )
 
