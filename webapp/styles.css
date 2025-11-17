@@ -194,7 +194,7 @@ textarea {
   flex: 1;
 }
 
-#shareTipsBtn {
+.secondary {
   border-radius: 12px;
   padding: 12px;
   background: rgba(79, 70, 229, 0.15);

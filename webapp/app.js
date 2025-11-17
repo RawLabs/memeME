@@ -20,7 +20,7 @@ const sizeInput = document.getElementById("sizePct");
 const cropSelect = document.getElementById("cropMode");
 const captionInput = document.getElementById("caption");
 const downloadBtn = document.getElementById("downloadBtn");
-const shareTipsBtn = document.getElementById("shareTipsBtn");
+const sendBotBtn = document.getElementById("sendBotBtn");
 const layersContainer = document.getElementById("layersContainer");
 const addLayerBtn = document.getElementById("addLayerBtn");
 const canvas = document.getElementById("previewCanvas");
@@ -31,6 +31,12 @@ const FONT_MAP = {
   anton: '"Anton", sans-serif',
   bebas: '"Bebas Neue", sans-serif',
   poppins: '"Poppins", sans-serif',
+};
+const FONT_FILE_MAP = {
+  impact: "Impact.ttf",
+  anton: "Anton-Regular.ttf",
+  bebas: "BebasNeue-Regular.ttf",
+  poppins: "Poppins-SemiBold.ttf",
 };
 
 let draggingLayerId = null;
@@ -105,9 +111,7 @@ function attachGlobalListeners() {
     renderPreview();
   });
   downloadBtn.addEventListener("click", downloadMeme);
-  shareTipsBtn.addEventListener("click", () => {
-    tg.showAlert("Download, close the studio, then send the saved image back into chat.");
-  });
+  sendBotBtn.addEventListener("click", handleSendToBot);
 
   canvas.addEventListener("pointerdown", handlePointerDown);
   canvas.addEventListener("pointermove", handlePointerMove);
@@ -348,6 +352,59 @@ function downloadMeme() {
     URL.revokeObjectURL(url);
     tg.HapticFeedback?.notificationOccurred("success");
   });
+}
+
+function handleSendToBot() {
+  try {
+    const payload = buildPayload();
+    tg.HapticFeedback?.impactOccurred("medium");
+    tg.sendData(JSON.stringify(payload));
+    setTimeout(() => tg.close(), 150);
+  } catch (error) {
+    tg.showAlert(error.message || "Unable to send data. Try again.");
+  }
+}
+
+function buildPayload() {
+  if (!state.selectedTemplate) {
+    throw new Error("Pick a template first.");
+  }
+  const layers = state.layers
+    .filter((layer) => layer.text.trim())
+    .map((layer) => ({
+      text: layer.text.trim(),
+      position: "custom",
+      alignment: "center",
+      uppercase: uppercaseInput.checked,
+      font: FONT_FILE_MAP[fontSelect.value] || "Impact.ttf",
+      color: colorInput.value,
+      outline: outlineInput.value,
+      sizePct: Number(sizeInput.value),
+      maxWidthPct: 0.95,
+      anchor: {
+        x: clamp(layer.xNorm, 0, 1),
+        y: clamp(layer.yNorm, 0, 1),
+      },
+    }));
+  if (!layers.length) {
+    throw new Error("Add some text first.");
+  }
+
+  return {
+    source: "template",
+    templateId: state.selectedTemplate.id,
+    layers,
+    crop: state.cropBox
+      ? {
+          x: state.cropBox.x,
+          y: state.cropBox.y,
+          width: state.cropBox.width,
+          height: state.cropBox.height,
+        }
+      : null,
+    caption: captionInput.value,
+    format: "JPEG",
+  };
 }
 
 function handlePointerDown(event) {

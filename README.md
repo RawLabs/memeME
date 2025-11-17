@@ -4,7 +4,7 @@ A Telegram meme studio that lives entirely inside Telegram. `/mememe` opens a Bo
 
 ## Highlights
 - **Inline Meme Studio** – `/mememe` replies with a WebApp button (`🎨 Open Meme Studio`) that launches the mini-app directly inside Telegram (DMs or groups with privacy mode on).
-- **Instant downloads** – the WebApp now renders memes client-side on a canvas so users can download the final image and post it anywhere (Telegram, Instagram, etc.) without waiting for the bot backend.
+- **Instant uploads** – tap “Send to Bot” in the WebApp and the backend renders/sends the meme right back into the chat. Prefer manual sharing? The Download button is still there.
 - **Drag-and-drop placement** – add up to three text boxes, drag them on the preview, or fine-tune their vertical position with sliders.
 - **Fresh templates** – templates are fetched from Imgflip (or any API you configure) every few hours; nothing is persisted locally beyond a JSON cache in memory.
 - **Chat fallback** – anyone can reply to a photo/document with `/caption top text || bottom text` to run the Python renderer if they prefer the classic chat flow.
@@ -47,7 +47,7 @@ When you add memeME to the shared launcher (`python scripts/start_all.py`), the 
 `webapp/` contains a minimal HTML/JS/CSS mini-app:
 - Lists templates from `webapp/templates.json` (replace with your own fetcher or point it at a CDN).
 - Live canvas preview with Impact-style text rendering, color/size sliders, uppercase toggle, and preset crops (square, 4:5, 16:9).
-- “Download Meme” saves the rendered canvas locally so the user can immediately share/upload it anywhere inside Telegram.
+- Drag text directly on the preview or nudge it via sliders, then hit “Send to Bot” to ship the configuration back to memeME (or “Download” for manual sharing).
 
 Host this folder on any HTTPS-capable service and point `MEMEME_WEBAPP_URL` to it. Telegram automatically handles authentication and theme colors when the page loads `telegram-web-app.js`.
 
