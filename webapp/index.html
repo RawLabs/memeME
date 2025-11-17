@@ -33,10 +33,40 @@
           Top text
           <textarea id="topText" rows="2" placeholder="Top line"></textarea>
         </label>
+        <div class="row">
+          <label>
+            Top placement
+            <select id="topPlacement">
+              <option value="top">Top</option>
+              <option value="center">Center</option>
+              <option value="bottom">Bottom</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label>
+            Top Y % (custom)
+            <input id="topCustomY" type="range" min="0" max="100" value="10" />
+          </label>
+        </div>
         <label>
           Bottom text
           <textarea id="bottomText" rows="2" placeholder="Bottom line"></textarea>
         </label>
+        <div class="row">
+          <label>
+            Bottom placement
+            <select id="bottomPlacement">
+              <option value="bottom">Bottom</option>
+              <option value="center">Center</option>
+              <option value="top">Top</option>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <label>
+            Bottom Y % (custom)
+            <input id="bottomCustomY" type="range" min="0" max="100" value="90" />
+          </label>
+        </div>
         <div class="row">
           <label>
             Font

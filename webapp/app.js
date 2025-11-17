@@ -12,6 +12,10 @@ const state = {
 const templateGrid = document.getElementById("templates");
 const topInput = document.getElementById("topText");
 const bottomInput = document.getElementById("bottomText");
+const topPlacement = document.getElementById("topPlacement");
+const bottomPlacement = document.getElementById("bottomPlacement");
+const topCustomY = document.getElementById("topCustomY");
+const bottomCustomY = document.getElementById("bottomCustomY");
 const fontSelect = document.getElementById("fontSelect");
 const colorInput = document.getElementById("textColor");
 const outlineInput = document.getElementById("outlineColor");
@@ -43,9 +47,18 @@ function attachListeners() {
   [topInput, bottomInput, uppercaseInput, captionInput].forEach((el) =>
     el.addEventListener("input", renderPreview)
   );
-  [fontSelect, colorInput, outlineInput].forEach((el) =>
+  [fontSelect, colorInput, outlineInput, topPlacement, bottomPlacement].forEach((el) =>
     el.addEventListener("change", renderPreview)
   );
+  [topCustomY, bottomCustomY].forEach((el) => el.addEventListener("input", () => {
+    const { target } = document.activeElement;
+    if (target === topCustomY) {
+      topPlacement.value = "custom";
+    } else if (target === bottomCustomY) {
+      bottomPlacement.value = "custom";
+    }
+    renderPreview();
+  }));
   sizeInput.addEventListener("input", renderPreview);
   cropSelect.addEventListener("change", () => {
     state.cropBox = computeCrop();
@@ -144,10 +157,18 @@ function renderPreview() {
 function getLayers() {
   const layers = [];
   if (topInput.value.trim()) {
-    layers.push({ text: topInput.value.trim(), position: "top" });
+    layers.push({
+      text: topInput.value.trim(),
+      position: topPlacement.value,
+      customY: Number(topCustomY.value) / 100,
+    });
   }
   if (bottomInput.value.trim()) {
-    layers.push({ text: bottomInput.value.trim(), position: "bottom" });
+    layers.push({
+      text: bottomInput.value.trim(),
+      position: bottomPlacement.value,
+      customY: Number(bottomCustomY.value) / 100,
+    });
   }
   return layers;
 }
@@ -173,6 +194,8 @@ function drawTextLayer(layer) {
     y = margin + fontSize;
   } else if (layer.position === "bottom") {
     y = canvas.height - totalHeight + fontSize * 0.2;
+  } else if (layer.position === "custom") {
+    y = layer.customY ? layer.customY * canvas.height : canvas.height / 2;
   } else {
     y = canvas.height / 2 - totalHeight / 2 + fontSize;
   }
