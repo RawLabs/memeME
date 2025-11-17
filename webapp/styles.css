@@ -45,7 +45,8 @@ label {
 }
 
 textarea,
-input,
+input[type="text"],
+input[type="range"],
 select {
   border-radius: 10px;
   border: 1px solid #333;
@@ -54,6 +55,58 @@ select {
   color: #0f172a;
   font-size: 1rem;
   appearance: none;
+}
+
+input[type="color"] {
+  width: 44px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid #2d303a;
+  padding: 2px;
+  background: #1f2430;
+  cursor: pointer;
+  appearance: none;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border-radius: 999px;
+  border: none;
+}
+
+input[type="color"]::-moz-color-swatch {
+  border-radius: 999px;
+  border: none;
+}
+
+input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #4fd1c5;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+input[type="checkbox"]::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+input[type="checkbox"]:checked {
+  background: #4fd1c5;
+  border-color: #67e8f9;
+}
+
+input[type="checkbox"]:checked::after {
+  background: #0b0f1a;
 }
 
 select:focus,
