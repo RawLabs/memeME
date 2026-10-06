@@ -1,5 +1,7 @@
 # memeME
 
+<img src="docs/images/mememe.webp" alt="memeME logo" width="200">
+
 A Telegram meme studio that lives entirely inside Telegram. `/mememe` opens a BotFather-style WebApp so users can pick classic templates, tweak fonts/colors, choose crops, and download the finished meme directly to their device without leaving Telegram. There is also a chat-only `/caption` fallback for quick edits on any uploaded photo.
 
 ## Highlights
